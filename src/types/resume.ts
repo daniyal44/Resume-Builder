@@ -52,4 +52,6 @@ export interface ResumeData {
   summary: string;
   certifications: string;
   languages: string;
+  templateId: string;
+  accentColor: string;
 }

@@ -13,6 +13,9 @@ const TEMPLATES = [
   { id: 'bold-header', name: 'Bold Header' },
   { id: 'pikachu', name: 'Pikachu (Right Sidebar)' },
   { id: 'minimal', name: 'Minimal' },
+  { id: 'creative-grid', name: 'Creative Grid' },
+  { id: 'professional-split', name: 'Professional Split' },
+  { id: 'elegant-minimal', name: 'Elegant Minimal' },
 ];
 
 const COLORS = [

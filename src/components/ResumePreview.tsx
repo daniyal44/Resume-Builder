@@ -5,6 +5,9 @@ import ModernSidebar from './templates/ModernSidebar';
 import BoldHeader from './templates/BoldHeader';
 import Pikachu from './templates/Pikachu';
 import Minimal from './templates/Minimal';
+import CreativeGrid from './templates/CreativeGrid';
+import ProfessionalSplit from './templates/ProfessionalSplit';
+import ElegantMinimal from './templates/ElegantMinimal';
 
 interface Props {
   data: ResumeData;
@@ -25,6 +28,12 @@ const ResumePreview = forwardRef<HTMLDivElement, Props>(({ data, scale = 1 }, re
         return <Pikachu data={data} ref={ref} />;
       case 'minimal':
         return <Minimal data={data} ref={ref} />;
+      case 'creative-grid':
+        return <CreativeGrid data={data} ref={ref} />;
+      case 'professional-split':
+        return <ProfessionalSplit data={data} ref={ref} />;
+      case 'elegant-minimal':
+        return <ElegantMinimal data={data} ref={ref} />;
       case 'classic':
       default:
         return <Classic data={data} ref={ref} />;

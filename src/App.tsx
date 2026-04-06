@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Download, Upload, Eye, Edit2, FileDown, Sun, Moon, FileText, Columns, ArrowLeft } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
-import * as pdfjsLib from 'pdfjs-dist';
 import type { ResumeData } from './types/resume';
 import { loadResumes, saveResume, deleteResume, generateId, type SavedResume } from './services/storage';
+import { extractPdfText, parsePdfResumeText } from './services/pdfParser';
 import PersonalInfoForm from './components/forms/PersonalInfoForm';
 import ProfilesForm from './components/forms/ProfilesForm';
 import EducationForm from './components/forms/EducationForm';
@@ -14,10 +14,7 @@ import InterestsForm from './components/forms/InterestsForm';
 import AdditionalInfoForm from './components/forms/AdditionalInfoForm';
 import DesignForm from './components/forms/DesignForm';
 import ResumePreview from './components/ResumePreview';
-import TemplatesList from './components/TemplatesList';
 import HomePage from './components/HomePage';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
 
 const blankResume: ResumeData = {
   header: {
@@ -167,32 +164,45 @@ function App() {
         const result = ev.target?.result;
         if (typeof result !== 'string') throw new Error('Invalid file content');
         
-        const json = JSON.parse(result) as any;
+        const rawJson = JSON.parse(result) as any;
         
         // Basic validation: must have at least a header or some recognizable ResumeData structure
-        if (!json || typeof json !== 'object') throw new Error('Invalid JSON format');
-        
-        const header = json.header || {};
+        if (!rawJson || typeof rawJson !== 'object') throw new Error('Invalid JSON format');
+
+        const source = (typeof rawJson.data === 'object' && rawJson.data !== null)
+          ? rawJson.data
+          : (typeof rawJson.resumeData === 'object' && rawJson.resumeData !== null)
+            ? rawJson.resumeData
+            : rawJson;
+
+        const header = (source.header && typeof source.header === 'object') ? source.header : {};
         const id = generateId();
         
         const importedData: ResumeData = {
           ...blankResume, // Start with defaults
-          ...json,        // Layer on imported data
-          // Ensure critical fields are properly formed even if missing in JSON
-          profiles: Array.isArray(json.profiles) ? json.profiles : [],
-          education: Array.isArray(json.education) ? json.education : [],
-          experience: Array.isArray(json.experience) ? json.experience : [],
-          projects: Array.isArray(json.projects) ? json.projects : [],
-          skills: Array.isArray(json.skills) ? json.skills : [],
-          interests: Array.isArray(json.interests) ? json.interests : [],
-          templateId: json.templateId || 'modern-sidebar',
-          accentColor: json.accentColor || '#3b82f6',
+          ...source,      // Layer on imported data if present
+          profiles: Array.isArray(source.profiles) ? source.profiles : [],
+          education: Array.isArray(source.education) ? source.education : [],
+          experience: Array.isArray(source.experience) ? source.experience : [],
+          projects: Array.isArray(source.projects) ? source.projects : [],
+          skills: Array.isArray(source.skills) ? source.skills : [],
+          interests: Array.isArray(source.interests) ? source.interests : [],
+          templateId: typeof source.templateId === 'string' ? source.templateId : 'modern-sidebar',
+          accentColor: typeof source.accentColor === 'string' ? source.accentColor : '#3b82f6',
           header: {
             ...blankResume.header,
             ...header,
-            headline: header.headline || '',
-            website: header.website || '',
+            profilePicture: typeof header.profilePicture === 'string' ? header.profilePicture : blankResume.header.profilePicture,
+            fullName: typeof header.fullName === 'string' ? header.fullName : blankResume.header.fullName,
+            headline: typeof header.headline === 'string' ? header.headline : '',
+            email: typeof header.email === 'string' ? header.email : blankResume.header.email,
+            website: typeof header.website === 'string' ? header.website : '',
+            contactNumber: typeof header.contactNumber === 'string' ? header.contactNumber : blankResume.header.contactNumber,
+            physicalAddress: typeof header.physicalAddress === 'string' ? header.physicalAddress : blankResume.header.physicalAddress,
           },
+          summary: typeof source.summary === 'string' ? source.summary : blankResume.summary,
+          certifications: typeof source.certifications === 'string' ? source.certifications : blankResume.certifications,
+          languages: typeof source.languages === 'string' ? source.languages : blankResume.languages,
         };
 
         setActiveResumeId(id);
@@ -212,126 +222,27 @@ function App() {
   const handleImportPDF = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-      const pdf = await loadingTask.promise;
-      
-      let fullText = '';
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const content = await page.getTextContent();
-        const strings = content.items.map((item: any) => 'str' in item ? item.str : '');
-        fullText += strings.join(' ') + '\n';
-      }
-
-      if (!fullText.trim()) {
-        throw new Error('No text content found in the PDF. It might be an image-only document.');
-      }
-
-      // ─── ROBUST PARSER ──────────────────────────────────────────────────────
-      const lines = fullText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-      
-      const emailMatch = fullText.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/);
-      const phoneMatch = fullText.match(/(\+?\d{1,2}\s?)?(\(?\d{3}\)?[\s.-]?)?\d{3}[\s.-]?\d{4}/);
-      
-      // Try to find sections
-      const sections: Record<string, string[]> = {
-        summary: [],
-        experience: [],
-        education: [],
-        skills: [],
-        projects: [],
-        other: []
-      };
-
-      let currentSection = 'summary';
-      const sectionKeywords: Record<string, RegExp> = {
-        experience: /^(EXPERIENCE|WORK HISTORY|EMPLOYMENT|PROFESSIONAL EXPERIENCE)/i,
-        education: /^(EDUCATION|ACADEMIC|QUALIFICATIONS)/i,
-        skills: /^(SKILLS|TECHNICAL SKILLS|COMPETENCIES|EXPERTISE)/i,
-        projects: /^(PROJECTS|PERSONAL PROJECTS|KEY PROJECTS)/i,
-        summary: /^(SUMMARY|PROFESSIONAL SUMMARY|PROFILE|OBJECTIVE)/i
-      };
-
-      // Identify the name (usually first non-empty line)
-      let fullName = lines[0] || '';
-      
-      // Sanitize Name: Skip if it looks like a file path, URL, or is too long/junk
-      if (fullName.length > 60 || fullName.includes('/') || fullName.includes('\\') || fullName.includes('://') || fullName.includes('@')) {
-        fullName = '';
-      } else {
-        // Remove common junk prefixes
-        fullName = fullName.replace(/^(Resume|CV|Name|Bio|Profile)[:\-\s]*/i, '').trim();
-        // Truncate to reasonable name length
-        if (fullName.length > 40) fullName = fullName.substring(0, 40) + '...';
-      }
-
-      lines.forEach((line) => {
-        let detected = false;
-        for (const [key, regex] of Object.entries(sectionKeywords)) {
-          if (regex.test(line)) {
-            currentSection = key;
-            detected = true;
-            break;
-          }
-        }
-        if (!detected) {
-          sections[currentSection].push(line);
-        }
-      });
-
-      const newData: ResumeData = {
-        ...blankResume,
-        header: {
-          ...blankResume.header,
-          fullName: fullName,
-          email: emailMatch ? emailMatch[0] : '',
-          contactNumber: phoneMatch ? phoneMatch[0] : '',
-        },
-        summary: sections.summary.join(' ').substring(0, 2000),
-        skills: sections.skills.join(',').split(',').map(s => s.trim()).filter(s => s.length > 2),
-        // Simple mapping for experience/education (one block per detected text)
-        experience: sections.experience.length > 0 ? [{
-          id: generateId(),
-          company: 'Imported Experience',
-          role: 'See details below',
-          startDate: '',
-          endDate: '',
-          description: sections.experience.join('\n')
-        }] : [],
-        education: sections.education.length > 0 ? [{
-          id: generateId(),
-          school: 'Imported Education',
-          degree: 'See details',
-          year: '',
-          gpa: ''
-        }] : [],
-        projects: sections.projects.length > 0 ? [{
-          id: generateId(),
-          name: 'Imported Projects',
-          description: sections.projects.join('\n'),
-          url: '',
-          startDate: '',
-          endDate: ''
-        }] : []
-      };
+      const fullText = await extractPdfText(arrayBuffer);
+      const newData = parsePdfResumeText(fullText);
 
       const id = generateId();
       setActiveResumeId(id);
       setResumeData(newData);
       persistResume(newData, id);
       setScreen('editor');
-      alert('PDF parsed! We\'ve populated sections based on keywords. Please review and refine the content.');
+      alert('PDF parsed successfully. Please review and refine the imported resume content.');
     } catch (err: any) {
       console.error('PDF Parse Error:', err);
-      if (err.message?.includes('Missing image')) {
-         alert('This PDF seems to be an image-only scan. Please use a text-based PDF for better results.');
+      if (err?.message?.includes('image-only') || err?.message?.includes('No text content found')) {
+        alert('This PDF seems to be an image-only scan. Please use a text-based PDF for better results.');
       } else {
-         alert('Failed to extract text from the PDF file. Error: ' + (err.message || 'Unknown error'));
+        alert('Failed to extract text from the PDF file. Error: ' + (err?.message || 'Unknown error'));
       }
     }
+
     if (fileInputRefPDF.current) fileInputRefPDF.current.value = '';
   };
 

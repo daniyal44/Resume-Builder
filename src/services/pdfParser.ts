@@ -39,7 +39,7 @@ const splitTextLines = (text: string) =>
 
 const isContactLine = (line: string) =>
   /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(line)
-  || /(\+?\d[\d()\s.\-]{7,})/.test(line)
+  || /(\+?\d[\d()\s.-]{7,})/.test(line)
   || /https?:\/\/[^\s]+/i.test(line)
   || /\b(linkedin|github|portfolio|website|web|www)\b/i.test(line);
 
@@ -55,7 +55,7 @@ const normalizePhone = (raw: string) =>
     .replace(/^\+0+/, '+0');
 
 const extractPhone = (text: string) => {
-  const match = text.match(/(\+?\d[\d()\s.\-]{7,}\d)/);
+  const match = text.match(/(\+?\d[\d()\s.-]{7,}\d)/);
   return match ? normalizePhone(match[0]) : '';
 };
 
@@ -98,7 +98,7 @@ const extractName = (lines: string[]) => {
     if (!cleaned) continue;
     if (isNameCandidate(cleaned)) return cleaned;
     if (cleaned.includes('|') || cleaned.includes('-')) {
-      const parts = cleaned.split(/[|\-]/).map((part) => part.trim());
+      const parts = cleaned.split(/[|-]/).map((part) => part.trim());
       const match = parts.find(isNameCandidate);
       if (match) return match;
     }
@@ -225,7 +225,7 @@ const parseSkills = (skillLines: string[], otherLines: string[]) => {
   return Array.from(
     new Set(
       normalized
-        .split(/[,;\/]+/)
+        .split(/[,;/]+/)
         .map((skill) => skill.trim())
         .filter((skill) => skill.length > 1)
     )
@@ -339,13 +339,21 @@ export const parsePdfResumeText = (fullText: string): ResumeData => {
   };
 };
 
-const gatherTextItems = (content: any) => {
-  const items = (content.items as any[])
-    .map((item) => ({
-      text: typeof item.str === 'string' ? item.str : typeof item.unicode === 'string' ? item.unicode : '',
-      x: item.transform?.[4] ?? 0,
-      y: item.transform?.[5] ?? 0,
-    }))
+const gatherTextItems = (content: unknown) => {
+  const rawItems =
+    (content as { items?: ReadonlyArray<Record<string, unknown>> } | null)?.items ?? [];
+
+  const items = rawItems
+    .map((item) => {
+      const transform = Array.isArray(item.transform)
+        ? item.transform.filter((n): n is number => typeof n === 'number')
+        : [];
+      return {
+        text: typeof item.str === 'string' ? item.str : typeof item.unicode === 'string' ? item.unicode : '',
+        x: transform[4] ?? 0,
+        y: transform[5] ?? 0,
+      };
+    })
     .filter((item) => item.text.trim().length > 0);
 
   items.sort((a, b) => {

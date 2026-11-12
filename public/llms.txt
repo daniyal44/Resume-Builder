@@ -1,0 +1,75 @@
+# OwnResume
+
+> OwnResume is a free, open, browser-based AI resume builder. It creates ATS-friendly,
+> recruiter-ready resumes and CVs with 8 professional templates, a live A4 preview,
+> PDF import and one-click PDF export. No account is required and all resume data is
+> stored locally in the user's browser — nothing is uploaded to a server.
+
+URL: https://getownresume.netlify.app/
+Language: English
+Price: Free (no account, no credit card)
+Platform: Any modern web browser (desktop, tablet, mobile)
+
+## What it does
+
+- Build a resume or CV from a guided form: personal info, summary, social profiles,
+  experience, projects, education, skills, interests, certifications and languages.
+- Choose from 8 professional layouts: Classic, Modern Sidebar, Bold Header, Pikachu
+  (right sidebar), Minimal, Creative Grid, Professional Split and Elegant Minimal.
+- Set an accent colour so the resume matches a personal brand.
+- Preview the exact A4 page live while editing, with edit / split / preview modes.
+- Import an existing resume from a text-based PDF or from a JSON backup.
+- Export a pixel-accurate PDF through the browser print pipeline (A4, no margins).
+- Switch between light and dark themes; the interface is fully responsive.
+
+## Privacy
+
+Resume content is saved in the browser's localStorage on the user's own device.
+There is no backend, no tracking of resume content, and no upload of personal data.
+Exported JSON files are the user's own portable backup.
+
+## ATS compatibility
+
+All templates output real, selectable text with conventional section headings, so
+applicant tracking systems can parse name, contact details, experience, education
+and skills. Resumes are not exported as images.
+
+## Who it is for
+
+Job seekers, students, career switchers, freelancers and professionals who need a
+clean, modern, ATS-friendly resume quickly and without paying a subscription.
+
+## Frequently asked questions
+
+### Is OwnResume free?
+Yes. Every template and export option is unlocked, with no sign-up and no trial limits.
+
+### Where is my data stored?
+Locally in the user's browser only. Nothing is sent to a server.
+
+### Can I import an existing resume?
+Yes — text-based PDFs are parsed into the form, and JSON backups can be restored.
+Image-only scanned PDFs cannot be read.
+
+### Are the templates ATS-friendly?
+Yes. They export real text with standard section headings.
+
+### Do I need an account to download my resume?
+No. You can download a PDF without creating an account.
+
+## Guides and resources
+
+- Resume builder (app): https://getownresume.netlify.app/
+- Free resume templates: https://getownresume.netlify.app/templates/
+- How to write a resume: https://getownresume.netlify.app/guides/how-to-write-a-resume/
+- ATS resume guide: https://getownresume.netlify.app/guides/ats-resume/
+- Resume format guide: https://getownresume.netlify.app/guides/resume-format/
+
+## Links
+
+- Sitemap: https://getownresume.netlify.app/sitemap.xml
+- Robots policy: https://getownresume.netlify.app/robots.txt
+
+## Source
+
+Open-source React + TypeScript + Vite application: https://github.com/daniyal44/Resume-Builder

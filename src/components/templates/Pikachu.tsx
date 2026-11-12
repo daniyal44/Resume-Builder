@@ -1,29 +1,30 @@
 import { forwardRef } from 'react';
 import { Mail, Phone, Globe, MapPin, Linkedin, Github, Twitter, Award, GraduationCap, Briefcase, Code } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import type { ResumeData } from '../../types/resume';
 
 interface Props {
   data: ResumeData;
 }
 
+const SectionHeader = ({ icon: Icon, title, dark = false, accent }: { icon: LucideIcon; title: string; dark?: boolean; accent: string }) => (
+  <div className="flex items-center gap-3 mb-4">
+    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm ${dark ? 'bg-white/10 text-white' : 'bg-slate-100 text-slate-800'}`} style={!dark ? { color: accent } : {}}>
+      <Icon className="w-4 h-4" />
+    </div>
+    <h2 className={`text-sm font-black uppercase tracking-[0.2em] ${dark ? 'text-white' : 'text-slate-900'}`}>{title}</h2>
+  </div>
+);
+
 const Pikachu = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
   const { header, profiles, summary, experience, projects, education, skills, certifications, languages, accentColor } = data;
   const ac = accentColor || '#ec4899'; // Default pinkish/yellow theme often has bold colors
 
-  const IconMap: any = {
+  const IconMap: Record<string, React.ReactNode> = {
     'LinkedIn': <Linkedin className="w-3.5 h-3.5" />,
     'GitHub': <Github className="w-3.5 h-3.5" />,
     'Twitter': <Twitter className="w-3.5 h-3.5" />,
   };
-
-  const SectionHeader = ({ icon: Icon, title, dark = false }: { icon: any, title: string, dark?: boolean }) => (
-    <div className="flex items-center gap-3 mb-4">
-      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm ${dark ? 'bg-white/10 text-white' : 'bg-slate-100 text-slate-800'}`} style={!dark ? { color: ac } : {}}>
-        <Icon className="w-4 h-4" />
-      </div>
-      <h2 className={`text-sm font-black uppercase tracking-[0.2em] ${dark ? 'text-white' : 'text-slate-900'}`}>{title}</h2>
-    </div>
-  );
 
   return (
     <div ref={ref} className="bg-white w-full min-h-[1131px] font-sans text-slate-800 flex print:shadow-none">
@@ -40,14 +41,14 @@ const Pikachu = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
 
         {summary && (
           <section>
-            <SectionHeader icon={Briefcase} title="Profile" />
+            <SectionHeader accent={ac} icon={Briefcase} title="Profile" />
             <p className="text-[14px] leading-relaxed text-slate-600 font-medium pl-11">{summary}</p>
           </section>
         )}
 
         {experience.length > 0 && (
           <section>
-            <SectionHeader icon={Briefcase} title="Experience" />
+            <SectionHeader accent={ac} icon={Briefcase} title="Experience" />
             <div className="space-y-8 pl-11">
               {experience.map(exp => (
                 <div key={exp.id} className="space-y-1.5">
@@ -65,7 +66,7 @@ const Pikachu = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
 
         {projects.length > 0 && (
           <section>
-            <SectionHeader icon={Code} title="Projects" />
+            <SectionHeader accent={ac} icon={Code} title="Projects" />
             <div className="space-y-6 pl-11">
               {projects.map(proj => (
                 <div key={proj.id} className="space-y-1">
@@ -90,7 +91,7 @@ const Pikachu = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
         )}
 
         <section className="space-y-6">
-          <SectionHeader icon={Mail} title="Contact" dark />
+          <SectionHeader accent={ac} icon={Mail} title="Contact" dark />
           <div className="space-y-4 text-[12px] pl-2 font-medium">
             {header.email && <div className="flex items-center gap-3 text-slate-300"><Mail className="w-4 h-4" /> {header.email}</div>}
             {header.contactNumber && <div className="flex items-center gap-3 text-slate-300"><Phone className="w-4 h-4" /> {header.contactNumber}</div>}
@@ -101,7 +102,7 @@ const Pikachu = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
 
         {profiles.length > 0 && (
           <section className="space-y-6">
-            <SectionHeader icon={Linkedin} title="Social" dark />
+            <SectionHeader accent={ac} icon={Linkedin} title="Social" dark />
             <div className="space-y-3 text-[12px] pl-2 font-medium">
               {profiles.map(p => (
                 <div key={p.id} className="flex items-center gap-3 text-slate-300">
@@ -118,7 +119,7 @@ const Pikachu = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
 
         {skills.length > 0 && (
           <section className="space-y-6">
-            <SectionHeader icon={Code} title="Skills" dark />
+            <SectionHeader accent={ac} icon={Code} title="Skills" dark />
             <div className="flex flex-wrap gap-2 pl-2">
               {skills.map((s, i) => (
                 <span key={i} className="text-[11px] font-black uppercase px-2 py-1 rounded bg-white/10 text-white/80 border border-white/10">{s}</span>
@@ -129,7 +130,7 @@ const Pikachu = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
 
         {education.length > 0 && (
           <section className="space-y-6">
-            <SectionHeader icon={GraduationCap} title="Education" dark />
+            <SectionHeader accent={ac} icon={GraduationCap} title="Education" dark />
             <div className="space-y-5 pl-2">
               {education.map(edu => (
                 <div key={edu.id} className="space-y-1">
@@ -144,7 +145,7 @@ const Pikachu = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
 
         {(certifications || languages) && (
           <section className="space-y-6">
-            <SectionHeader icon={Award} title="More" dark />
+            <SectionHeader accent={ac} icon={Award} title="More" dark />
             <div className="space-y-4 pl-2 text-[12px] font-medium text-slate-300">
                {certifications && <p className="whitespace-pre-wrap">{certifications}</p>}
                {languages && <p className="font-bold border-t border-white/10 pt-4" style={{ color: ac }}>{languages}</p>}

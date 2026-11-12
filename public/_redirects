@@ -1,0 +1,5 @@
+# Google Search Console site verification — never send this to the SPA fallback
+/google1ab7400cf65ca469.html    /google1ab7400cf65ca469.html    200!
+
+# SPA fallback — serve the app for any unknown path (Netlify)
+/*    /index.html   200

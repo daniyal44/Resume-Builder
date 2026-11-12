@@ -1,0 +1,73 @@
+name: 🐛 Bug report
+description: Something is broken in the builder, a template or the export.
+title: "bug: "
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please fill in as much as you can —
+        a short, reproducible report gets fixed much faster.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug.
+      placeholder: When I export a resume in the Classic template, the second page starts mid-bullet…
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open https://getownresume.netlify.app/
+        2. Create a resume and choose "Classic"
+        3. Add 4 experience entries
+        4. Click Export PDF
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      placeholder: The page break should happen between entries.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part of the app?
+      options:
+        - Editor / form fields
+        - A resume template
+        - PDF export
+        - PDF / JSON import
+        - Landing page, guides or templates pages
+        - Something else
+    validations:
+      required: true
+
+  - type: input
+    id: template
+    attributes:
+      label: Template (if relevant)
+      placeholder: Modern Sidebar / Classic / Pikachu …
+
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and OS
+      placeholder: Chrome 130 on Windows 11
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or a sample PDF
+      description: Drag files here. Remove any personal data first — never upload a real resume.

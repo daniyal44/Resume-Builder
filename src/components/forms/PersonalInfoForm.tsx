@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Upload, Trash2, User, Mail, Phone, MapPin, Globe, LayoutTemplate, Link as LinkIcon } from 'lucide-react';
 import type { HeaderData } from '../../types/resume';
 
@@ -8,11 +8,9 @@ interface Props {
 }
 
 export default function PersonalInfoForm({ data, onChange }: Props) {
-  const [imgError, setImgError] = useState(false);
-
-  useEffect(() => {
-    setImgError(false);
-  }, [data.profilePicture]);
+  // Track the exact src that failed instead of resetting state in an effect:
+  // a new profile picture is automatically considered valid again.
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -43,9 +41,9 @@ export default function PersonalInfoForm({ data, onChange }: Props) {
         <div className="flex-shrink-0 flex flex-col gap-3 w-28 sm:w-36">
           <label className="block text-sm font-bold tracking-wide text-zinc-900 dark:text-zinc-100 text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">Profile Picture</label>
           <div className="relative group w-28 h-28 sm:w-36 sm:h-36 rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700/80 flex items-center justify-center overflow-hidden hover:border-zinc-400 dark:border-zinc-600 transition-colors bg-zinc-50 dark:bg-zinc-800/50 transition-colors shrink-0">
-            {data.profilePicture && !imgError ? (
+            {data.profilePicture && data.profilePicture !== failedSrc ? (
               <>
-                <img src={data.profilePicture} alt="Profile" onError={() => setImgError(true)} className="w-full h-full object-cover" />
+                <img src={data.profilePicture} alt="Profile" onError={() => setFailedSrc(data.profilePicture)} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <button 
                     onClick={() => handleChange('profilePicture', '')}

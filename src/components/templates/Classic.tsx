@@ -3,16 +3,16 @@ import type { ResumeData } from '../../types/resume';
 
 interface Props { data: ResumeData; }
 
+const Section = ({ title, children, accent }: { title: string; children: React.ReactNode; accent: string }) => (
+  <div className="mb-5">
+    <h3 style={{ color: accent, borderBottomColor: accent }} className="text-[11px] font-black tracking-[0.18em] uppercase border-b-2 pb-1 mb-3">{title}</h3>
+    {children}
+  </div>
+);
+
 const Classic = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
   const { header, profiles, summary, experience, projects, education, skills, interests, certifications, languages, accentColor } = data;
   const ac = accentColor || '#1e293b';
-
-  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <div className="mb-5">
-      <h3 style={{ color: ac, borderBottomColor: ac }} className="text-[11px] font-black tracking-[0.18em] uppercase border-b-2 pb-1 mb-3">{title}</h3>
-      {children}
-    </div>
-  );
 
   return (
     <div ref={ref} className="bg-white w-full min-h-[1131px] font-sans text-zinc-800 p-12 flex flex-col gap-5 print:p-10">
@@ -30,13 +30,13 @@ const Classic = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
       </header>
 
       {summary && (
-        <Section title="Professional Summary">
+        <Section accent={ac} title="Professional Summary">
           <p className="text-[12.5px] leading-relaxed text-justify">{summary}</p>
         </Section>
       )}
 
       {experience?.length > 0 && (
-        <Section title="Experience">
+        <Section accent={ac} title="Experience">
           {experience.map(exp => (
             <div key={exp.id} className="mb-4">
               <div className="flex justify-between items-baseline">
@@ -51,7 +51,7 @@ const Classic = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
       )}
 
       {projects?.length > 0 && (
-        <Section title="Projects">
+        <Section accent={ac} title="Projects">
           {projects.map(p => (
             <div key={p.id} className="mb-3">
               <div className="flex justify-between items-baseline">
@@ -65,7 +65,7 @@ const Classic = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
       )}
 
       {education?.length > 0 && (
-        <Section title="Education">
+        <Section accent={ac} title="Education">
           {education.map(e => (
             <div key={e.id} className="flex justify-between items-start mb-2">
               <div>
@@ -83,7 +83,7 @@ const Classic = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
 
       <div className="grid grid-cols-2 gap-6">
         {skills?.length > 0 && (
-          <Section title="Skills">
+          <Section accent={ac} title="Skills">
             <div className="flex flex-wrap gap-1.5">
               {skills.map((s, i) => (
                 <span key={i} className="text-[11px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: ac + '18', color: ac }}>{s}</span>
@@ -92,7 +92,7 @@ const Classic = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
           </Section>
         )}
         {interests?.length > 0 && (
-          <Section title="Interests">
+          <Section accent={ac} title="Interests">
             <p className="text-[12px] text-zinc-700">{interests.join(' · ')}</p>
           </Section>
         )}
@@ -100,8 +100,8 @@ const Classic = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
 
       {(certifications || languages) && (
         <div className="grid grid-cols-2 gap-6">
-          {certifications && <Section title="Certifications"><p className="text-[12px] text-zinc-700 whitespace-pre-wrap">{certifications}</p></Section>}
-          {languages && <Section title="Languages"><p className="text-[12px] text-zinc-700 whitespace-pre-wrap">{languages}</p></Section>}
+          {certifications && <Section accent={ac} title="Certifications"><p className="text-[12px] text-zinc-700 whitespace-pre-wrap">{certifications}</p></Section>}
+          {languages && <Section accent={ac} title="Languages"><p className="text-[12px] text-zinc-700 whitespace-pre-wrap">{languages}</p></Section>}
         </div>
       )}
     </div>

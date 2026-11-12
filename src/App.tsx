@@ -164,18 +164,20 @@ function App() {
         const result = ev.target?.result;
         if (typeof result !== 'string') throw new Error('Invalid file content');
         
-        const rawJson = JSON.parse(result) as any;
+        const rawJson = JSON.parse(result) as Record<string, unknown>;
         
         // Basic validation: must have at least a header or some recognizable ResumeData structure
         if (!rawJson || typeof rawJson !== 'object') throw new Error('Invalid JSON format');
 
-        const source = (typeof rawJson.data === 'object' && rawJson.data !== null)
-          ? rawJson.data
-          : (typeof rawJson.resumeData === 'object' && rawJson.resumeData !== null)
-            ? rawJson.resumeData
-            : rawJson;
+        const asRecord = (value: unknown): Record<string, unknown> | null =>
+          value && typeof value === 'object' && !Array.isArray(value)
+            ? (value as Record<string, unknown>)
+            : null;
 
-        const header = (source.header && typeof source.header === 'object') ? source.header : {};
+        const source: Record<string, unknown> =
+          asRecord(rawJson.data) ?? asRecord(rawJson.resumeData) ?? rawJson;
+
+        const header: Record<string, unknown> = asRecord(source.header) ?? {};
         const id = generateId();
         
         const importedData: ResumeData = {
@@ -234,12 +236,13 @@ function App() {
       persistResume(newData, id);
       setScreen('editor');
       alert('PDF parsed successfully. Please review and refine the imported resume content.');
-    } catch (err: any) {
+    } catch (err) {
       console.error('PDF Parse Error:', err);
-      if (err?.message?.includes('image-only') || err?.message?.includes('No text content found')) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (message.includes('image-only') || message.includes('No text content found')) {
         alert('This PDF seems to be an image-only scan. Please use a text-based PDF for better results.');
       } else {
-        alert('Failed to extract text from the PDF file. Error: ' + (err?.message || 'Unknown error'));
+        alert('Failed to extract text from the PDF file. Error: ' + (message || 'Unknown error'));
       }
     }
 
@@ -292,15 +295,17 @@ function App() {
 
   // ─── EDITOR ──────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col font-sans transition-colors duration-200">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col font-sans transition-colors duration-200 overflow-x-hidden">
 
-      <nav className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-4 py-3 sm:px-6 lg:px-8 flex justify-between items-center sticky top-0 z-10 transition-colors duration-200">
-        <div className="flex items-center gap-3">
+      <nav className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-3 py-3 sm:px-6 lg:px-8 flex justify-between items-center gap-2 sticky top-0 z-30 transition-colors duration-200">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             onClick={goHome}
+            aria-label="Back to your resumes"
             className="flex items-center gap-1.5 text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" /> Home
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+            <span className="hidden xs:inline sm:inline">Home</span>
           </button>
           <span className="text-zinc-300 dark:text-zinc-700">|</span>
           <h1 className="text-base font-bold tracking-tight text-zinc-900 dark:text-zinc-50 truncate max-w-[120px] sm:max-w-[300px]">
@@ -324,9 +329,12 @@ function App() {
           <div className="relative" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => { setShowUploadMenu(!showUploadMenu); setShowDownloadMenu(false); }}
-              className="flex items-center gap-1.5 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors border border-zinc-200 dark:border-zinc-800 shadow-sm"
+              aria-label="Import a resume"
+              aria-expanded={showUploadMenu}
+              className="flex items-center gap-1.5 px-2.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors border border-zinc-200 dark:border-zinc-800 shadow-sm"
             >
-              <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Upload
+              <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Upload</span>
             </button>
             {showUploadMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg overflow-hidden flex flex-col z-50">
@@ -345,9 +353,12 @@ function App() {
           <div className="relative ml-1 sm:ml-2" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => { setShowDownloadMenu(!showDownloadMenu); setShowUploadMenu(false); }}
-              className="flex items-center gap-1.5 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 rounded-lg transition-colors shadow-sm"
+              aria-label="Export your resume"
+              aria-expanded={showDownloadMenu}
+              className="flex items-center gap-1.5 px-2.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 rounded-lg transition-colors shadow-sm"
             >
-              <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Download
+              <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Download</span>
             </button>
             {showDownloadMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg overflow-hidden flex flex-col z-50">

@@ -10,7 +10,7 @@ const ModernSidebar = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
   const { header, profiles, summary, experience, projects, education, skills, languages, accentColor } = data;
   const ac = accentColor || '#3b82f6'; // Default blue
 
-  const IconMap: any = {
+  const IconMap: Record<string, React.ReactNode> = {
     'LinkedIn': <Linkedin className="w-3 h-3" />,
     'GitHub': <Github className="w-3 h-3" />,
     'Twitter': <Twitter className="w-3 h-3" />,

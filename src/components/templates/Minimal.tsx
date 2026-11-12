@@ -5,20 +5,20 @@ interface Props {
   data: ResumeData;
 }
 
+const Section = ({ title, children, accent }: { title: string; children: React.ReactNode; accent: string }) => (
+  <div className="flex gap-8 group">
+    <div className="w-24 shrink-0 text-right">
+      <h2 className="text-[10px] font-black uppercase tracking-[0.2em] pt-1" style={{ color: accent }}>{title}</h2>
+    </div>
+    <div className="flex-1 border-l border-slate-100 pl-8 pb-8 group-last:pb-0">
+      {children}
+    </div>
+  </div>
+);
+
 const Minimal = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
   const { header, summary, experience, projects, education, skills, certifications, languages, accentColor } = data;
   const ac = accentColor || '#475569';
-
-  const Section = ({ title, children }: { title: string, children: any }) => (
-    <div className="flex gap-8 group">
-      <div className="w-24 shrink-0 text-right">
-        <h2 className="text-[10px] font-black uppercase tracking-[0.2em] pt-1" style={{ color: ac }}>{title}</h2>
-      </div>
-      <div className="flex-1 border-l border-slate-100 pl-8 pb-8 group-last:pb-0">
-        {children}
-      </div>
-    </div>
-  );
 
   return (
     <div ref={ref} className="bg-white w-full min-h-[1131px] font-sans text-slate-800 p-16 flex flex-col gap-8 print:shadow-none print:p-12">
@@ -40,13 +40,13 @@ const Minimal = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
 
       <div className="flex flex-col">
         {summary && (
-          <Section title="Profile">
+          <Section accent={ac} title="Profile">
             <p className="text-[12px] leading-relaxed text-slate-600 font-medium">{summary}</p>
           </Section>
         )}
 
         {experience.length > 0 && (
-          <Section title="Experience">
+          <Section accent={ac} title="Experience">
             <div className="space-y-6">
               {experience.map(exp => (
                 <div key={exp.id} className="space-y-1">
@@ -63,7 +63,7 @@ const Minimal = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
         )}
 
         {projects.length > 0 && (
-          <Section title="Projects">
+          <Section accent={ac} title="Projects">
             <div className="space-y-4">
               {projects.map(proj => (
                 <div key={proj.id} className="space-y-0.5">
@@ -79,7 +79,7 @@ const Minimal = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
         )}
 
         {education.length > 0 && (
-          <Section title="Education">
+          <Section accent={ac} title="Education">
             <div className="space-y-4">
               {education.map(edu => (
                 <div key={edu.id} className="space-y-0.5">
@@ -93,7 +93,7 @@ const Minimal = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
         )}
 
         {skills.length > 0 && (
-          <Section title="Skills">
+          <Section accent={ac} title="Skills">
             <div className="flex flex-wrap gap-x-6 gap-y-2">
               {skills.map((s, i) => (
                 <div key={i} className="flex items-center gap-2">
@@ -106,7 +106,7 @@ const Minimal = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
         )}
 
         {(languages || certifications) && (
-          <Section title="More">
+          <Section accent={ac} title="More">
             <div className="grid grid-cols-2 gap-8 text-[11px] font-medium text-slate-500 leading-relaxed uppercase tracking-wide">
                {certifications && <p className="whitespace-pre-wrap">{certifications}</p>}
                {languages && <p>{languages}</p>}

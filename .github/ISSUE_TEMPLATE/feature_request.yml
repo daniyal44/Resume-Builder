@@ -1,0 +1,46 @@
+name: ✨ Feature request
+description: Suggest a template, a field, or an improvement to the builder.
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        OwnResume stays free, private and account-free — requests that fit that model are the easiest to accept.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      placeholder: I keep rewriting my summary for every job, so I want saved variants.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      placeholder: A "variants" dropdown next to the summary field…
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - New template
+        - Editor / form UX
+        - Import / export
+        - Accessibility
+        - SEO / content pages
+        - Performance
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional — anything you tried or ruled out.
